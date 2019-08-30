@@ -1,0 +1,254 @@
+目录
+	- 1. Atol项目介绍
+	- 2. 项目文件组织
+	- 3. 服务器启动关闭指令
+	
+
+1. Atol项目介绍
+	Atol，Annotation Tag OnLine, 是一个面向医疗文本的在线中文分词标注系统 。
+	其主要功能包括，对文本按照句子进行分词和标注，并提供搜索功能来查看词的所有标注结果，
+	并可以进行批量修改。Atol支持多用户同时，进行标注，并可以对不同用户之间的标注结果进行
+	对比和同步。此外Atol还支持对用户分词和NER标注结果进行对比。
+	具体功能与页面的关系如下：
+		1. /newUmls 对医疗文本进行 中文文本分词 和 分词类别标注 
+		2. /search 对标注的文本信息，按找分词进行搜索，并可以进行批量修改
+		3. /newTag 展示不同标注者标注结果的对比结果，并可以即时的进行合并
+		4. /Atol_NER_Compare 展示分词标注与NER标注的对比结果
+	   *5. /NerRelation Ner之间关系的标注系统，目前已逐步移动到 NER标注系统。
+	   
+2. 项目文件组织
+	本项目使用Python + html + js 开发，是一个包含前端和后端的项目。
+	其中后端主要采用了Python3 语言的Flask框架，
+	数据库管理采用了Flask-SQLAlchemy来进行操作
+	前端采用了Jinja2模板框架结合原生 html来进行页面设计，
+	使用js的 jquery库进行页面动态设计。
+	项目代码按照Flask项目进行阻止，具体结构如下：
+	Atol
+	|	/app	        项目的主要代码
+		|	/dataset		存储数据
+		|	/main			定义服务端响应模块
+			|	__init__.py		main模块初始化
+			|	views.py		定义所有网页的响应
+			|	forms.py		定义Flask表单
+		|	/nlptext		定义文本处理的功能性模块
+			|	__init__.py		nlptext模块初始化
+			|	newDBUtils.py 	数据管理相关的工具模块1
+			|	corpus.py		定义文本预处理工具 Corpus类型
+			| 	DBUtils.py		数据管理相关的工具模块2
+			|	WordTagCount.py	对分词标注结果进行计数
+			|	base.py			以下4个为构成Corpus的类型
+			|	text.py
+			|	atom.py
+			|	channel.py
+		|	/static			前端要用js（页面逻辑）和 css（页面样式）文件
+			| 	/css		css文件
+			|	/js			js文件
+			|	/tmp		图标文件
+			|	ATol.ico	网页图标
+		|	/templates		前端页面
+			|	404.html				网页错误404界面
+			|	500.html				网页错误500界面
+			|	Atol_NER_Compare.html	NER标注与分词标注对比界面
+			|	base.html				定义系统功能页面基础框架
+			|	index.html				登陆后首页
+			|	login.html	 			登陆页面
+			|	login_base.html	    	定义系统登陆页面基础框架
+			|	NerRelation.html		Ner关系标注页面
+			|	newTag.html	        	分词对比界面
+			|	newUmls.html			分词标注界面
+			|	register.html			用户注册界面
+			|	Search.html				搜索界面
+		|	__init__.py		app模块初始化
+		|	models.py		定义Flask-SQLAlchemy的数据库的访问接口
+		|	utils.py		定义通用的工具函数
+		|	globalInfo.py	获取当前系统的配置信息
+	|	/documents	    项目文档
+	|	/migrations     数据库迁移相关（闲置）
+	|	/tests		    测试相关       （闲置）
+	|	atol.py		    Flask服务器启动执行脚本，读取数据，创建服务器应用
+	|	config.py	    Flask服务器配置
+	|	relationFrame.py创建关系
+	|	boot.bat	    启动脚本
+
+3. 服务器启动关闭指令
+windows（服务器开发用）：
+	启动安装Flask运行环境的python环境，进入项目所在目录
+	// 指定包含FLASK app的python文件
+	set FLASK_APP=atol.py
+	// 指定Flask的运行配置，根据config.py中定义的，存在三种模式
+	// 其中目前仅用了 development
+	set FLASK_CONFIG=development
+	// 设置是否可以调试
+	set FLASK_DEBUG=1
+	// 设置Flask应用启动时的端口号，5007为例，访问服务器路径为http://ip:5007
+	set FLASK_RUN_PORT=5007
+	// 设置Flask应用在浏览器中cookie的名字
+	set SESS_NAME=train
+	// 运行flask服务器，且可以通过服务器IP访问
+	// --host=127.0.0.1时，仅可以在本地访问
+	flask run --host=0.0.0.0
+	关闭shell即可中单服务器程序
+	
+	
+Linux（服务器上线用）：
+	// 启动安装Flask运行环境的python环境
+	cd /mnt/pyVRenv/Atol_python3.6
+	pipenv shell
+	// 进入项目所在目录
+	. gotoserver.sh
+	cd ATol
+	// 指定包含FLASK app的python文件
+	export FLASK_APP=atol.py
+	// 指定Flask的运行配置，根据config.py中定义的，存在三种模式
+	// 其中目前仅用了 development
+	export FLASK_CONFIG=development
+	// 设置是否可以调试
+	export FLASK_DEBUG=1
+	// 设置Flask应用启动时的端口号，5007为例，访问服务器路径为http://ip:5007
+	export FLASK_RUN_PORT=5007
+	// 设置Flask应用在浏览器中cookie的名字
+	export SESS_NAME=train
+	// 运行flask服务器，且可以通过服务器IP访问。
+	// 启动后自动进入后台执行，并将命令行输出重定向至 文件 /mnt/log/Atol/out.20190703
+	// --host=127.0.0.1时，仅可以在本地访问
+	nohup flask run --host=0.0.0.0 > /mnt/log/Atol/out.20190703 &
+	// 查看当前运行的端口占用情况
+	// 根据服务器的端口，获取服务器程序的进行编号 PID，并杀掉进程既可以关闭服务器
+	. /mnt/tools/check_netport.sh
+	kill PID
+
+4. 后端接口定义
+模块名
+/app/main/view.py
+--------------------------------------------------------------------------------------------------
+|	注意：@main.route('/****', methods=['GET', 'POST'])是flask提供的装饰器，
+|	被@main.route修饰的函数，可以通过访问网址来执行，如****为login时 http://127.0.0.1:5007/login。 
+|	除了直接通过在浏览器输入地址进行访问外，还可以通过在页面上通过 出发事件调用 AJAX 程序访问。
+|	被@login_required修饰的函数，表示该路径只有登陆的用户可以访问。
+--------------------------------------------------------------------------------------------------
+|	创建登陆界面。 一个接口可以同时绑定两个路径
+|	@main.route('/', methods=['GET', 'POST'])
+|	@main.route('/login', methods=['GET', 'POST'])
+|	def login()
+----------------------------------------------------
+|	登出当前用户
+|	@main.route('/logout', methods=['GET', 'POST'])
+|	def logout():
+----------------------------------------------------
+|	注册用户
+|	@main.route('/register', methods=['GET','POST'])
+|	def register():
+----------------------------------------------------
+|	用户索引页，给出欢迎信息和系统更新说明
+|	@main.route('/index', methods=['GET', 'POST'])
+|	@login_required
+|	def index():
+----------------------------------------------------
+|	分词界面，负责初始化页面上的分词标签顺序
+|	@main.route('/newUmls', methods = ['GET', 'POST'])
+|	@login_required
+|	def newUmls():
+----------------------------------------------------
+|	获取当前用户需要完成的任务列表
+|	@main.route('/getUserInfo', methods = ['GET', 'POST'])
+|	@login_required
+|	def getUserInfo():
+----------------------------------------------------
+|	获取用户某个任务的分词信息
+|	@main.route('/getSegInfo', methods = ['GET', 'POST'])
+|	@login_required
+|	def getSegInfo():
+----------------------------------------------------
+|	提交用户的分词结果，返回用户的历史标注结果
+|	@main.route('/submitSeg', methods = ['GET', 'POST'])
+|	@login_required
+|	def submitSeg():
+
+|	将新的分词与历史分词进行比对，尽可能获取历史分词中的标注信息
+|	umlsDF 是历史分词标注数据，类型为 pandas.DataFrame，
+|	含有word分词(str)，tag标签(str)，start开始位置(int)，end结束位置四列(int)
+|	newSegList是新的分词列表，类型为 List
+|	getOldTagList(umlsDF, newSegList)
+
+|	获取分词列表的推荐标签列表， 
+|	newSegList为分词列表， 类型为List
+|	def getRecommendTag(newSegList):
+
+|	根据词频字典，获取分词的推荐标签
+|	word为分词(str)
+|	wordTagDict为词频字典(dict)
+|	def _getRecommendTag(word, wordTagDict):
+----------------------------------------------------
+|	保存分词标注结果到数据关系模块中
+|	@main.route('/saveTags', methods = ['GET', 'POST'])
+|	@login_required
+|	def saveTags():
+----------------------------------------------------
+|	用户搜索页
+|	@main.route('/search', methods = ['GET', 'POST'])
+|	@login_required
+|	def search():
+----------------------------------------------------
+|	在数据模块中，搜索指定的词，返回所有可能的分词可能，即不同的分词及不同的标签
+|	@main.route('/SearchWordType', methods = ['GET', 'POST'])
+|	@login_required
+|	def SearchWordType():
+----------------------------------------------------
+|	选择指定分词和标签，返回所有包含进行此种标注的句子信息
+|	@main.route('/getWordTagInfo', methods = ['GET', 'POST'])
+|	@login_required
+|	def getWordTagInfo():
+----------------------------------------------------
+|	将数据模块中，指定的文件（病历编号，句子编号）中特定词的标注修改为新的分词和标注
+|	@main.route('/changeAWord2WordsTags', methods = ['GET', 'POST'])
+|	@login_required
+|	def changeAWord2WordsTags():
+----------------------------------------------------
+|	对比页面，返回所有用户的名字
+|	@main.route('/newTag', methods=['GET','POST'])
+|	@login_required
+|	def newTag():
+----------------------------------------------------
+|	对两个用户的分词任务进行对比，返回两者存在不同的文件名
+|	@main.route('/showCompareFile', methods = ['GET', 'POST'])
+|	@login_required
+|	def showCompareFile():
+----------------------------------------------------
+|	对两个用户的指定进行对比，返回存在不同的句子编号和对比结果
+|	@main.route('/showFileSentence', methods = ['GET', 'POST'])
+|	@login_required
+|	def showFileSentence():
+----------------------------------------------------
+|	保存分词对比之后的结果到数据模型
+|	@main.route('/storetagsDuringCompare', methods = ['GET', 'POST'])
+|	@login_required
+|	def storetagsDuringCompare():
+----------------------------------------------------
+|	NER与分词对比界面，返回所有用户的名字
+|	@main.route('/Atol_NER_Compare', methods = ['GET', 'POST'])
+|	@login_required
+|	def Atol_NER_Compare():
+----------------------------------------------------
+|	将用户的分词与NER进行对比，返回对比信息
+|	对比信息是一个Dict，其结构为
+|	{'病历所属的部门': 
+|		{'病历编号1': [[句子Id, 句子内容], ...],
+|		'病历编号2': [[句子Id, 句子内容], ...]}
+|	}		
+|	@main.route('/showCompareFileofAtol2NER', methods = ['GET', 'POST'])
+|	@login_required
+|	def showCompareFileofAtol2NER():
+----------------------------------------------------
+|	查询用户指定文件的指定句子的NER分词对比结果
+|	@main.route('/querySentenceByUserofAtol2NER', methods = ['GET', 'POST'])
+|	@login_required
+|	def querySentenceByUserofAtol2NER():
+----------------------------------------------------
+
+对list1和list2的内容进行比对，若全等则返回True， 否则返回False
+def ifListEq(list1, list2):
+    return operator.eq(list1, list2)
+
+对objStr，在srcStr[beg:end]中进行搜索，若存在则返回其在srcStr中的位置，若不存在返回-1
+def Index(srcStr, objStr, beg = 0, end = -1):
+
